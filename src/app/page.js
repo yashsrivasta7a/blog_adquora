@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 
 export default function Home() {
   const [blogs, setBlogs] = useState([]);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
 
   useEffect(() => {
     fetch("/api/blogs")
-      .then((res) => res.json())
-      .then((data) => {
-        setBlogs(data);
+      .then(async (res) => {
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          setError(data?.error || data?.message || "Failed to load blogs");
+          setBlogs([]);
+        } else {
+          setBlogs(Array.isArray(data) ? data : []);
+        }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        setError(err.message || "Network error");
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
@@ -42,12 +52,7 @@ export default function Home() {
                   >
                     Dashboard
                   </Link>
-                  <Link
-                    href="/api/auth/signout"
-                    className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    Sign Out
-                  </Link>
+                  <UserButton />
                 </>
               ) : (
                 <>
@@ -80,7 +85,11 @@ export default function Home() {
           </p>
         </div>
 
-        {blogs.length === 0 ? (
+        {error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 text-lg">{error}</p>
+          </div>
+        ) : blogs.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-zinc-600 dark:text-zinc-400 text-lg">
               No blogs yet. Be the first to write one!
@@ -97,12 +106,9 @@ export default function Home() {
                 <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {blog.title}
                 </h3>
-                <div
-                  className="text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-3"
-                  dangerouslySetInnerHTML={{
-                    __html: blog.content.substring(0, 150) + "...",
-                  }}
-                />
+                <div className="text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-3">
+                  {((blog.content || "").replace(/<[^>]*>/g, "")).substring(0,150) + "..."}
+                </div>
                 <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-500">
                   <span>{blog.authorName}</span>
                   <span>

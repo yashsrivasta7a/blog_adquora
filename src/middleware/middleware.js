@@ -1,7 +1,7 @@
-import {authMiddleware} from '@clerk/nextjs'
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default authMiddleware({
-  publicRoutes: ["/", "/blog(.*)", "/api/blogs(.*)"]
+export default clerkMiddleware({
+  publicRoutes: ["/", "/blog(.*)", "/api/blogs(.*)", "/sign-in", "/sign-up", "/sign-out"]
 });
 
 export const config = {

@@ -22,9 +22,10 @@ const BlogSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-BlogSchema.pre("save",(next)=>{
-    this.updatedAt = Data.now();
-    next();
-})
+BlogSchema.pre("save", function (next) {
+  // Use a normal function to have correct `this` binding
+  this.updatedAt = Date.now();
+  next();
+});
 
 export default mongoose.models.Blog || mongoose.model("Blog", BlogSchema);

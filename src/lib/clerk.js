@@ -2,8 +2,8 @@ const CLERK_API_BASE = "https://api.clerk.com/v1";
 
 //Uses your Clerk secret key from .env
 function clerkHeaders() {
-  const key = process.env.CLERK_API_KEY;
-  if (!key) throw new Error("CLERK_API_KEY missing in env");
+  const key = process.env.CLERK_API_KEY || process.env.CLERK_SECRET_KEY || process.env.CLERK_SECRET;
+  if (!key) throw new Error("CLERK API key missing in env (set CLERK_API_KEY or CLERK_SECRET_KEY)");
   return {
     Authorization: `Bearer ${key}`,
     "Content-Type": "application/json"
